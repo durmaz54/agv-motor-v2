@@ -16,9 +16,8 @@
 
 
 #include "stm32f1xx_hal.h"
-#include "string.h"
 
-#define CAN_DEADTIME 3000 //millisecond
+#define CAN_DEADTIME 1500 //millisecond
 
 #define MYSTDID 0x010
 //10
@@ -39,7 +38,9 @@ void GZ_CAN_Init();
 
 void GZ_CAN_Transmit(struct MOTOR motorx);
 
-void GZ_CAN_Receive(float *m1speed, float *m2speed);
+void GZ_CAN_Receive_motor1(double *p);
+void GZ_CAN_Receive_motor2(double *p);
+
 
 
 

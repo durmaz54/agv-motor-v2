@@ -7,14 +7,17 @@
 
 #include "gz_can.h"
 
+ CAN_TxHeaderTypeDef myTxHeader;
+ CAN_RxHeaderTypeDef myRxHeader;
+ uint8_t rxData[8] = { 0 };
+ uint8_t rxData_1[8] = {0};
+ uint8_t rxData_2[8] = {0};
 
 
 
-static CAN_TxHeaderTypeDef myTxHeader;
-static CAN_RxHeaderTypeDef myRxHeader;
-static uint8_t rxData[8] = { 0 };
-static int32_t nowTime=0, dTime=0;
-char motor1STR[4],motor2STR[4];
+static int32_t nowTime_1=0, dTime_1=0;
+static int32_t nowTime_2=0, dTime_2=0;
+
 
 void GZ_CAN_Init() {
 
@@ -24,10 +27,10 @@ void GZ_CAN_Init() {
 	canfilterconfig.FilterBank = 10;
 	canfilterconfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
 	// değişken 16, id 11 bit olduğu için kaydırıyoruz.
-	canfilterconfig.FilterIdHigh = OTHERSTDID << 5; //OTHERSTDID << 5
+	canfilterconfig.FilterIdHigh = 0x0000; //OTHERSTDID << 5
 	canfilterconfig.FilterIdLow = 0x0000; // for ext id //0x0000
-	canfilterconfig.FilterMaskIdHigh = 0xFFFF << 5;
-	canfilterconfig.FilterMaskIdLow = 0xFFFF; // for ext id
+	canfilterconfig.FilterMaskIdHigh = 0x0000 << 5;//0xFFFF << 5
+	canfilterconfig.FilterMaskIdLow = 0x0000; // for ext id
 
 	canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -67,11 +70,18 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 			!= HAL_OK) {
 		Error_Handler();
 	}
+	if(myRxHeader.StdId == 0x17){
+		memcpy(rxData_1, rxData,8);
+
+	}else if(myRxHeader.StdId == 0x16){
+		memcpy(rxData_2, rxData,8);
+	}
+	/*
 	if (myRxHeader.StdId != OTHERSTDID) {
 		Error_Handler();
-	}
+	}*/
+	nowTime_1 = HAL_GetTick();
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-	nowTime = HAL_GetTick();
 
 }
 
@@ -81,22 +91,17 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan) {
 
 }
 
-float test(char *str) {
-	float rslt=0;
-	int8_t i1=str[0] - '0';
-	int8_t i2=str[2] - '0';
-	int8_t i3=str[3] - '0';
-
-	rslt = i1+((float)i2/10.00)+((float)i3/100.00);
-	return rslt;
-}
 
 
-void GZ_CAN_Receive(float *m1speed, float *m2speed) {
+/*
+void GZ_CAN_Receive(double *m1speed, double *m2speed) {
 	dTime = HAL_GetTick();
 
-	memcpy(motor1STR, &rxData,4);
-	memcpy(motor2STR, &rxData[4],4);
+
+
+	//memcpy(motor1STR, &rxData[1],3);
+	//memcpy(motor2STR, &rxData[5],3);
+
 
 
 	if(dTime-nowTime > CAN_DEADTIME){
@@ -104,13 +109,77 @@ void GZ_CAN_Receive(float *m1speed, float *m2speed) {
 		*m2speed = 0x00;
 	}
 	else{
-		//sscanf(motor1STR, "%f",m1speed);
-		//sscanf(motor2STR, "%f",m2speed);
-		*m1speed = test(motor1STR);
-		*m2speed = test(motor2STR);
+		*m1speed = atof(rxData);
+		*m2speed = atof(rxData);
 
 	}
 
+}*/
+
+double my_atof(char *str) {
+    double result = 0.0;
+    int sign = 1, decimal = 0;
+
+    // Skip leading whitespace
+    while (*str == ' ') {
+        str++;
+    }
+
+    // Check for sign character
+    if (*str == '+' || *str == '-') {
+        if (*str == '-') {
+            sign = -1;
+        }
+        str++;
+    }
+
+    // Convert digits before decimal point
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10.0 + (*str - '0');
+        str++;
+    }
+
+    // Convert digits after decimal point
+    if (*str == '.') {
+        str++;
+        while (*str >= '0' && *str <= '9') {
+            result = result * 10.0 + (*str - '0');
+            decimal++;
+            str++;
+        }
+    }
+
+    // Calculate the final result
+    while (decimal--) {
+        result /= 10.0;
+    }
+    return sign * result;
+}
+
+
+
+void GZ_CAN_Receive_motor1(double *p){
+	dTime_1 = HAL_GetTick();
+	double rslt=0;
+	if(dTime_1 - nowTime_1 > CAN_DEADTIME){
+		rslt =0;
+	}
+	else{
+		rslt= my_atof(&rxData_1);
+	}
+	*p = rslt;
+}
+
+void GZ_CAN_Receive_motor2(double *p){
+	dTime_2 = HAL_GetTick();
+	double rslt=0;
+	if(dTime_2 - nowTime_1 > CAN_DEADTIME){
+		rslt = 0;
+	}
+	else{
+		rslt= my_atof(&rxData_2);
+	}
+	*p = rslt;
 }
 
 void GZ_CAN_Transmit(struct MOTOR motorx) {

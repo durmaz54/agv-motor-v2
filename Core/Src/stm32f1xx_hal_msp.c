@@ -200,14 +200,22 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
     __HAL_RCC_TIM2_CLK_ENABLE();
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /**TIM2 GPIO Configuration
-    PA0-WKUP     ------> TIM2_CH1
-    PA1     ------> TIM2_CH2
+    PA15     ------> TIM2_CH1
+    PB3     ------> TIM2_CH2
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    __HAL_AFIO_REMAP_TIM2_PARTIAL_1();
 
     /* TIM2 interrupt Init */
     HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
@@ -310,10 +318,12 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef* htim_encoder)
     __HAL_RCC_TIM2_CLK_DISABLE();
 
     /**TIM2 GPIO Configuration
-    PA0-WKUP     ------> TIM2_CH1
-    PA1     ------> TIM2_CH2
+    PA15     ------> TIM2_CH1
+    PB3     ------> TIM2_CH2
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_15);
+
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_3);
 
     /* TIM2 interrupt DeInit */
     HAL_NVIC_DisableIRQ(TIM2_IRQn);

@@ -18,11 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "gz_can.h"
-#include "motor.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "gz_can.h"
+#include "motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,7 +47,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-float m1speed, m2speed;
+double m1speed=0.00, m2speed=0.00;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,7 +79,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -102,15 +102,17 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, ENABLE);
   motor_Init();
   GZ_CAN_Init();
-  motor1_set_speed(0);
-  motor2_set_speed(0);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  GZ_CAN_Receive(&m1speed, &m2speed);
+	  GZ_CAN_Receive_motor1(&m1speed);
+	  GZ_CAN_Receive_motor2(&m2speed);
+	  //motor1_set_speed(200);
+	  //motor2_set_speed(200);
 	  encoder_loop((double)m1speed,(double)m2speed);
     /* USER CODE END WHILE */
 
