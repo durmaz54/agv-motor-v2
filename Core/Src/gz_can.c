@@ -12,7 +12,12 @@
  uint8_t rxData[8] = { 0 };
  uint8_t rxData_1[8] = {0};
  uint8_t rxData_2[8] = {0};
+	int32_t data1, data2;
 
+	union byte_to_float {
+	    float f;
+	    unsigned char bytes[4];
+	};
 
 
 static int32_t nowTime_1=0, dTime_1=0;
@@ -70,16 +75,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 			!= HAL_OK) {
 		Error_Handler();
 	}
-	if(myRxHeader.StdId == 0x17){
-		memcpy(rxData_1, rxData,8);
-
-	}else if(myRxHeader.StdId == 0x16){
-		memcpy(rxData_2, rxData,8);
-	}
 	/*
-	if (myRxHeader.StdId != OTHERSTDID) {
-		Error_Handler();
-	}*/
+	if(myRxHeader.StdId == 0x17){
+		memcpy(rxData_1, rxData,8);*/
+
+
 	nowTime_1 = HAL_GetTick();
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 
@@ -116,58 +116,32 @@ void GZ_CAN_Receive(double *m1speed, double *m2speed) {
 
 }*/
 
-double my_atof(char *str) {
-    double result = 0.0;
-    int sign = 1, decimal = 0;
-
-    // Skip leading whitespace
-    while (*str == ' ') {
-        str++;
-    }
-
-    // Check for sign character
-    if (*str == '+' || *str == '-') {
-        if (*str == '-') {
-            sign = -1;
-        }
-        str++;
-    }
-
-    // Convert digits before decimal point
-    while (*str >= '0' && *str <= '9') {
-        result = result * 10.0 + (*str - '0');
-        str++;
-    }
-
-    // Convert digits after decimal point
-    if (*str == '.') {
-        str++;
-        while (*str >= '0' && *str <= '9') {
-            result = result * 10.0 + (*str - '0');
-            decimal++;
-            str++;
-        }
-    }
-
-    // Calculate the final result
-    while (decimal--) {
-        result /= 10.0;
-    }
-    return sign * result;
-}
 
 
-
-void GZ_CAN_Receive_motor1(double *p){
+void GZ_CAN_Receive_motor1(float *p, float *p2){
 	dTime_1 = HAL_GetTick();
-	double rslt=0;
 	if(dTime_1 - nowTime_1 > CAN_DEADTIME){
-		rslt =0;
+		*p =0;
+		*p2=0;
 	}
 	else{
-		rslt= my_atof(&rxData_1);
+		memcpy(p, rxData,4);
+		memcpy(p2, &rxData[4],4);
+		//memcpy(p2,rxData,4);
+		/*
+		memcpy(data_temp,rxData,8);
+		data1=0;
+		data2=0;
+		//data1 =	(data_temp[3] << 24) | (data_temp[2] << 16) | (data_temp[1] << 8) | (data_temp[0]);
+		data1 |= (uint16_t)data_temp[0];
+		data1 |= ((uint16_t)data_temp[1] << 8);
+		data1 |= ((uint16_t)data_temp[2] << 16);
+		data1 |= ((uint16_t)data_temp[3] << 24);
+
+		data2 =	(data_temp[7] << 24) | (data_temp[6] << 16) | (data_temp[5] << 8) | (data_temp[4]);
+		*p = (float)data1/100.00;
+		*p2 = (float)data2/100.00;*/
 	}
-	*p = rslt;
 }
 
 void GZ_CAN_Receive_motor2(double *p){
@@ -177,7 +151,6 @@ void GZ_CAN_Receive_motor2(double *p){
 		rslt = 0;
 	}
 	else{
-		rslt= my_atof(&rxData_2);
 	}
 	*p = rslt;
 }

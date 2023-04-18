@@ -22,7 +22,7 @@ extern TIM_HandleTypeDef ENCODERTIM_2;
  double speed_act_2 = 0;
 
 
- const double kp = 30, ki = 0, kd = 10; //kp=50
+ const double kp = 35, ki = 0, kd = 5; //kp=50
 
  double pid_input_1, pid_output_1, pid_setpoint_1 = 0;
  double pid_input_2, pid_output_2, pid_setpoint_2 = 0;
@@ -32,8 +32,8 @@ PID PID1(&pid_input_1, &pid_output_1, &pid_setpoint_1, kp, ki, kd, _PID_CD_DIREC
 
 PID PID2(&pid_input_2, &pid_output_2, &pid_setpoint_2, kp, ki, kd, _PID_CD_DIRECT);
 
- int16_t speed_1;
- int16_t speed_2;
+ double speed_1;
+ double speed_2;
 
 
 static int32_t nowTime = 0, dTime = 0;
@@ -152,7 +152,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 void encoder_loop(double m1s,double m2s) {
 	nowTime = HAL_GetTick();
-	if (nowTime - dTime >= 50) {
+	if (nowTime - dTime >= 10) {
 
 		pid_setpoint_1=m1s;
 		pid_setpoint_2=m2s;
@@ -168,7 +168,7 @@ void encoder_loop(double m1s,double m2s) {
 		pid_input_1 = speed_act_1;//encoder kablosundan dolayı
 		PID1.Compute();
 
-		speed_1 += (int16_t) pid_output_1;
+		speed_1 += pid_output_1;
 		//speed_1 = (int16_t)pid_output_1;
 		if(speed_1 > 900){
 			speed_1 = 900;
@@ -180,7 +180,7 @@ void encoder_loop(double m1s,double m2s) {
 			motor1_set_speed(0);
 		}
 		else{
-			motor1_set_speed(speed_1);
+			motor1_set_speed((int16_t)speed_1);
 
 		}
 		encoder_1_pulses_prev = encoder_1_pulses;
@@ -198,7 +198,7 @@ void encoder_loop(double m1s,double m2s) {
 		pid_input_2 = speed_act_2;
 		PID2.Compute();
 
-		speed_2 += (int16_t) pid_output_2;
+		speed_2 += pid_output_2;
 		//speed_2 = (int16_t)pid_output_2;
 
 		if(speed_2 > 900){
@@ -210,7 +210,7 @@ void encoder_loop(double m1s,double m2s) {
 			motor2_set_speed(0);
 		}
 		else{
-			motor2_set_speed(speed_2);
+			motor2_set_speed((int16_t)speed_2);
 		}
 		encoder_2_pulses_prev = encoder_2_pulses;
 
