@@ -8,6 +8,7 @@
 #include "pid.h"
 #include "math.h"
 
+#define PID_TIME 50
 
 extern TIM_HandleTypeDef MOTOR12_TIM;
 
@@ -22,7 +23,7 @@ extern TIM_HandleTypeDef ENCODERTIM_2;
  double speed_act_2 = 0;
 
 
-  double kp = 20, ki = 0.00, kd = 0; //kp=50
+  double kp = 40, ki = 0.00, kd = 5; //kp=50
 
  double pid_input_1, pid_output_1, pid_setpoint_1 = 0;
  double pid_input_2, pid_output_2, pid_setpoint_2 = 0;
@@ -80,12 +81,12 @@ void encoder_setup() {
 
 void pid_setup() {
 	PID1.SetMode(_PID_MODE_AUTOMATIC);
-	PID1.SetSampleTime(50); //millisecond
-	PID1.SetOutputLimits(-200, 200);
+	PID1.SetSampleTime(PID_TIME); //millisecond
+	PID1.SetOutputLimits(-50, 50);
 
 	PID2.SetMode(_PID_MODE_AUTOMATIC);
-	PID2.SetSampleTime(50); //millisecond
-	PID2.SetOutputLimits(-200, 200);
+	PID2.SetSampleTime(PID_TIME); //millisecond
+	PID2.SetOutputLimits(-50, 50);
 }
 
 void motor_Init() {
@@ -150,12 +151,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 }
 
-void encoder_loop(double m1s,double m2s) {
+void encoder_loop(double left,double right) {
 	nowTime = HAL_GetTick();
-	if (nowTime - dTime >= 50) {
+	if (nowTime - dTime >= PID_TIME) {
 
-		pid_setpoint_1=m1s;
-		pid_setpoint_2=m2s;
+		pid_setpoint_1=right;
+		pid_setpoint_2=left;
 
 		encoder_1_pulses = (int32_t) __HAL_TIM_GET_COUNTER(&ENCODERTIM_1) / 4;
 		encoder1_temp_shifting = encoder1_temp;
@@ -180,6 +181,7 @@ void encoder_loop(double m1s,double m2s) {
 		}
 
 		if(pid_setpoint_1 == 0){
+			speed_1=0;
 			motor1_set_speed(0);
 		}
 		else{
@@ -214,6 +216,7 @@ void encoder_loop(double m1s,double m2s) {
 			speed_2 = -900;
 		}
 		if(pid_setpoint_2 == 0){
+			speed_2=0;
 			motor2_set_speed(0);
 		}
 		else{

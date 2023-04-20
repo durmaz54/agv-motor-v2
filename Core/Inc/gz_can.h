@@ -17,7 +17,7 @@
 
 #include "stm32f1xx_hal.h"
 
-#define CAN_DEADTIME 0xFFFF //millisecond
+#define CAN_DEADTIME 2000 //millisecond
 
 #define MYSTDID 0x010
 //10

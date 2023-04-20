@@ -33,7 +33,7 @@
 
 
 void motor_Init();
-void encoder_loop(double m1Speed,double m2Speed);
+void encoder_loop(double left,double right);
 
 void motor1_set_speed(int16_t pwm);
 void motor2_set_speed(int16_t pwm);

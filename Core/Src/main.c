@@ -48,7 +48,7 @@ TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 double m1speed=0.00, m2speed=0.00;
-float test1, test2, s1=3.14;
+float left, right, s1=3.14;
 char ss[4];
 /* USER CODE END PV */
 
@@ -104,7 +104,8 @@ int main(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, ENABLE);
   motor_Init();
   GZ_CAN_Init();
-
+  struct MOTOR motor;
+  motor.current=10;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,13 +113,13 @@ int main(void)
   while (1)
   {
 	  memcpy(ss,&s1,4);
-	  GZ_CAN_Receive_motor1(&test1,&test2);
+	  GZ_CAN_Receive_motor1(&left,&right);
 	  //test1= 0.3;
 	  //test2 = 0.3;
 	  //GZ_CAN_Receive_motor2(&m2speed);
 	  //motor1_set_speed(450);
 	  //motor2_set_speed(450);
-	 encoder_loop((double)test1,(double)test2);
+	 encoder_loop((double)left,(double)right);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
