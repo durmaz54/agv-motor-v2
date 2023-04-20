@@ -116,8 +116,8 @@ int main(void)
 	  //test1= 0.3;
 	  //test2 = 0.3;
 	  //GZ_CAN_Receive_motor2(&m2speed);
-	  //motor1_set_speed(200);
-	  //motor2_set_speed(200);
+	  //motor1_set_speed(450);
+	  //motor2_set_speed(450);
 	 encoder_loop((double)test1,(double)test2);
     /* USER CODE END WHILE */
 

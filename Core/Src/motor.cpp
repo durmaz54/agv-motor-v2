@@ -22,7 +22,7 @@ extern TIM_HandleTypeDef ENCODERTIM_2;
  double speed_act_2 = 0;
 
 
- const double kp = 35, ki = 0, kd = 5; //kp=50
+  double kp = 20, ki = 0.00, kd = 0; //kp=50
 
  double pid_input_1, pid_output_1, pid_setpoint_1 = 0;
  double pid_input_2, pid_output_2, pid_setpoint_2 = 0;
@@ -80,12 +80,12 @@ void encoder_setup() {
 
 void pid_setup() {
 	PID1.SetMode(_PID_MODE_AUTOMATIC);
-	PID1.SetSampleTime(10); //millisecond
-	PID1.SetOutputLimits(-50, 50);
+	PID1.SetSampleTime(50); //millisecond
+	PID1.SetOutputLimits(-200, 200);
 
 	PID2.SetMode(_PID_MODE_AUTOMATIC);
-	PID2.SetSampleTime(10); //millisecond
-	PID2.SetOutputLimits(-50, 50);
+	PID2.SetSampleTime(50); //millisecond
+	PID2.SetOutputLimits(-200, 200);
 }
 
 void motor_Init() {
@@ -152,7 +152,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 void encoder_loop(double m1s,double m2s) {
 	nowTime = HAL_GetTick();
-	if (nowTime - dTime >= 10) {
+	if (nowTime - dTime >= 50) {
 
 		pid_setpoint_1=m1s;
 		pid_setpoint_2=m2s;
@@ -165,7 +165,10 @@ void encoder_loop(double m1s,double m2s) {
 		speed_act_1 = ((1000.00 * (double) encoder_1_pulses_prev)
 				/ ((double) (nowTime - dTime) * 600)) / 2.89;
 
+
 		pid_input_1 = speed_act_1;//encoder kablosundan dolayı
+
+
 		PID1.Compute();
 
 		speed_1 += pid_output_1;
@@ -195,7 +198,11 @@ void encoder_loop(double m1s,double m2s) {
 		speed_act_2 = (((1000.00 * (double) encoder_2_pulses_prev)
 				/ ((double) (nowTime - dTime) * 600)) / 2.89) * -1;//encoder kablosundan dolayı -1
 
-		pid_input_2 = speed_act_2;
+
+		pid_input_2 = speed_act_2;//encoder kablosundan dolayı
+
+
+
 		PID2.Compute();
 
 		speed_2 += pid_output_2;
@@ -215,7 +222,7 @@ void encoder_loop(double m1s,double m2s) {
 		encoder_2_pulses_prev = encoder_2_pulses;
 
 		//---------time-----------------
-		dTime = nowTime;
+		dTime = HAL_GetTick();
 	}
 }
 
