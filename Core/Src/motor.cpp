@@ -23,7 +23,7 @@ extern TIM_HandleTypeDef ENCODERTIM_2;
  double speed_act_2 = 0;
 
 
-  double kp = 40, ki = 0.00, kd = 5; //kp=50
+  double kp = 80, ki = 0.00, kd = 10; //kp=40_5
 
  double pid_input_1, pid_output_1, pid_setpoint_1 = 0;
  double pid_input_2, pid_output_2, pid_setpoint_2 = 0;
