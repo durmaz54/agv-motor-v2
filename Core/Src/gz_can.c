@@ -7,6 +7,14 @@
 
 #include "gz_can.h"
 
+
+extern UART_HandleTypeDef huart3;
+
+uint8_t uartData[8]={0};
+
+uint8_t canData[8]={0};
+
+
  CAN_TxHeaderTypeDef myTxHeader;
  CAN_RxHeaderTypeDef myRxHeader;
  uint8_t rxData[8] = { 0 };
@@ -34,7 +42,7 @@ void GZ_CAN_Init() {
 	// değişken 16, id 11 bit olduğu için kaydırıyoruz.
 	canfilterconfig.FilterIdHigh = 0x0000; //OTHERSTDID << 5
 	canfilterconfig.FilterIdLow = 0x0000; // for ext id //0x0000
-	canfilterconfig.FilterMaskIdHigh = 0x0000 << 5;//0xFFFF << 5
+	canfilterconfig.FilterMaskIdHigh = 0x0000;//0xFFFF << 5
 	canfilterconfig.FilterMaskIdLow = 0x0000; // for ext id
 
 	canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -71,13 +79,17 @@ void GZ_CAN_Init() {
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 
-	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &myRxHeader, rxData)
+	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &myRxHeader, canData)
 			!= HAL_OK) {
 		Error_Handler();
 	}
-	/*
-	if(myRxHeader.StdId == 0x17){
-		memcpy(rxData_1, rxData,8);*/
+	if(myRxHeader.StdId == 0x16){
+		memcpy(uartData,canData,8);
+		HAL_UART_Transmit(&huart3, uartData, 8, 50);
+	}
+	else{
+		memcpy(rxData,canData,8);
+	}
 
 
 	nowTime_1 = HAL_GetTick();

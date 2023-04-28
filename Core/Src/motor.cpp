@@ -10,6 +10,7 @@
 
 #define PID_TIME 50
 
+
 extern TIM_HandleTypeDef MOTOR12_TIM;
 
 extern TIM_HandleTypeDef ENCODERTIM_1;
@@ -116,7 +117,7 @@ void motor2_set_speed(int16_t pwm) {
 	if (pwm != 10000) {
 		HAL_GPIO_WritePin(MOTOR2_EN_PORT, MOTOR2_EN_PIN, GPIO_PIN_SET);
 		if (pwm > 0) {
-			MOTOR12_TIM.Instance->CCR3 = pwm;  //PA6
+			MOTOR12_TIM.Instance->CCR3 =pwm;  //PA6
 			MOTOR12_TIM.Instance->CCR4 = 0;  //PA7
 		} else {
 			pwm *= -1;
